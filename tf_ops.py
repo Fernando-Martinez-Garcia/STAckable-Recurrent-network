@@ -2,10 +2,10 @@ import tensorflow as tf
 
 
 def create_sess():
-    sess_config = tf.ConfigProto(allow_soft_placement=True)
+    sess_config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
     sess_config.gpu_options.allow_growth = True
 
-    return tf.Session(config=sess_config)
+    return tf.compat.v1.Session(config=sess_config)
 
 
 def create_scalar_summaries(tags, values):
@@ -19,9 +19,9 @@ def create_scalar_summaries(tags, values):
     '''
     summary_value_list = []
     for i in range(len(tags)):
-        summary_value_list.append(tf.Summary.Value(tag=tags[i],
+        summary_value_list.append(tf.compat.v1.Summary.Value(tag=tags[i],
                                                    simple_value=values[i]))
-    return tf.Summary(value=summary_value_list)
+    return tf.compat.v1.Summary(value=summary_value_list)
 
 
 def linear(input_data, output_dim, scope=None, stddev=1.0, init_func=None):
@@ -30,9 +30,9 @@ def linear(input_data, output_dim, scope=None, stddev=1.0, init_func=None):
     elif init_func is None:
         initializer = None
     const = tf.constant_initializer(0.0)
-    with tf.variable_scope(scope or 'linear'):
-        w = tf.get_variable(
+    with tf.compat.v1.variable_scope(scope or 'linear'):
+        w = tf.compat.v1.get_variable(
             'weights', [input_data.get_shape()[-1], output_dim],
             initializer=initializer)
-        b = tf.get_variable('bias', [output_dim], initializer=const)
+        b = tf.compat.v1.get_variable('bias', [output_dim], initializer=const)
         return tf.matmul(input_data, w) + b

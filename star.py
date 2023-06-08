@@ -1,11 +1,11 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.contrib.rnn import LSTMStateTuple
+from tensorflow.compat.v1.nn.rnn_cell import LSTMStateTuple
 from tensorflow.python.ops import random_ops
 from tensorflow.python.keras import initializers
 
 
-class STARCell(tf.contrib.rnn.BasicLSTMCell):
+class STARCell(tf.compat.v1.nn.rnn_cell.BasicLSTMCell):
     def __init__(self, num_units, t_max=784,
                  **kwargs):
         '''
@@ -18,7 +18,7 @@ class STARCell(tf.contrib.rnn.BasicLSTMCell):
 
     def __call__(self, x, state, scope=None):
         """STAR cell."""
-        with tf.variable_scope(scope or type(self).__name__):
+        with tf.compat.v1.variable_scope(scope or type(self).__name__):
             if self._state_is_tuple:
                 h, _ = state
             else:
@@ -28,21 +28,21 @@ class STARCell(tf.contrib.rnn.BasicLSTMCell):
 
             x_size = x.get_shape().as_list()[1]
             
-            weights_OBS = tf.get_variable('W_xh_z',
+            weights_OBS = tf.compat.v1.get_variable('W_xh_z',
                                    [x_size, 1 * self.num_units], initializer=initializers.get('orthogonal'))            
-            W_xh = tf.get_variable('W_xh_K',
+            W_xh = tf.compat.v1.get_variable('W_xh_K',
                                    [x_size, 1 * self.num_units], initializer=initializers.get('orthogonal'))
-            W_hh = tf.get_variable('W_hh',
+            W_hh = tf.compat.v1.get_variable('W_hh',
                                    [self.num_units, 1 * self.num_units], initializer=initializers.get('orthogonal'))
             
 
             if self.t_max is None:
                 print('Zero initializer ')
-                bias = tf.get_variable('bias', [2 * self.num_units],
+                bias = tf.compat.v1.get_variable('bias', [2 * self.num_units],
                                        initializer=bias_initializer(2))
             else:
                 print('Using chrono initializer ...')
-                bias = tf.get_variable('bias', [2 * self.num_units],
+                bias = tf.compat.v1.get_variable('bias', [2 * self.num_units],
                                        initializer=chrono_init(self.t_max,
                                                                2))
 
@@ -69,7 +69,7 @@ class STARCell(tf.contrib.rnn.BasicLSTMCell):
 def chrono_init(t_max, num_gates):
     def _initializer(shape, dtype=tf.float32, partition_info=None):
         num_units = shape[0]//num_gates
-        uni_vals = tf.log(random_ops.random_uniform([num_units], minval=1.0,
+        uni_vals = tf.math.log(random_ops.random_uniform([num_units], minval=1.0,
                                                     maxval=t_max, dtype=dtype,
                                                     seed=42))
 

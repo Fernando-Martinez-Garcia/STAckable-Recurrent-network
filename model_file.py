@@ -3,6 +3,8 @@ from tf_ops import linear
 from star import STARCell
 from bn_star import BNSTAR_cell
 
+tf.compat.v1.disable_eager_execution()
+
 
 def rnn(x, h_dim, y_dim, keep_prob, sequence_lengths,
         training, output_format, cell_type='star',
@@ -22,9 +24,9 @@ def rnn(x, h_dim, y_dim, keep_prob, sequence_lengths,
     def single_cell(dim, output_projection=None, training=True):
         if cell_type == 'rnn':
             print('Using the standard RNN cell')
-            cell = tf.contrib.rnn.BasicRNNCell(dim)        
+            cell = tf.compat.v1.nn.rnn_cell.BasicRNNCell(dim)        
         elif cell_type == 'lstm':
-            cell = tf.contrib.rnn.LSTMCell(dim)  
+            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(dim)  
             print('Using LSTM cell')
         elif cell_type == 'star':
             cell = STARCell(dim, t_max=t_max)
@@ -34,7 +36,7 @@ def rnn(x, h_dim, y_dim, keep_prob, sequence_lengths,
             print('Using BN-STAR cell')
 
 
-        drop_cell = tf.contrib.rnn.DropoutWrapper(
+        drop_cell = tf.compat.v1.nn.rnn_cell.DropoutWrapper(
             cell,
             input_keep_prob=1,
             output_keep_prob=keep_prob)
@@ -45,12 +47,12 @@ def rnn(x, h_dim, y_dim, keep_prob, sequence_lengths,
         cells = [single_cell(dim, training=training) for dim in h_dim]
         
         print('Num cells: ' + str(len(cells)))
-        cell = tf.contrib.rnn.MultiRNNCell(cells)
+        cell = tf.compat.v1.nn.rnn_cell.MultiRNNCell(cells)
     else:
         cell = single_cell(h_dim[0], training=training)
 
     if output_format == 'last':
-        out , final_state = tf.nn.dynamic_rnn(
+        out , final_state = tf.compat.v1.nn.dynamic_rnn(
             cell, x, sequence_length=sequence_lengths,
             dtype=tf.float32)
 
@@ -68,7 +70,7 @@ def rnn(x, h_dim, y_dim, keep_prob, sequence_lengths,
         proj_out = linear(out, y_dim, scope='output_mapping')
     
     elif output_format == 'all':
-        out, _ = tf.nn.dynamic_rnn(
+        out, _ = tf.compat.v1.nn.dynamic_rnn(
             cell, x, sequence_length=sequence_lengths,
             dtype=tf.float32)
         flat_out = tf.reshape(out, (-1, out.get_shape()[-1]))
@@ -100,20 +102,20 @@ class RNN_Model(object):
         self.mse = mse
 
     def build_inputs(self):
-        self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')
-        self.x = tf.placeholder(tf.float32, [None, None, self.n_features],
+        self.keep_prob = tf.compat.v1.placeholder(tf.float32, name='keep_prob')
+        self.x = tf.compat.v1.placeholder(tf.float32, [None, None, self.n_features],
                                 name='x')
         if self.output_seq:
-            self.y = tf.placeholder(tf.float32, [None, None, self.n_classes],
+            self.y = tf.compat.v1.placeholder(tf.float32, [None, None, self.n_classes],
                                     name='y')
         else:
-            self.y = tf.placeholder(tf.float32, [None, self.n_classes],
+            self.y = tf.compat.v1.placeholder(tf.float32, [None, self.n_classes],
                                     name='y')
-        self.seq_lens = tf.placeholder(tf.int32, [None],
+        self.seq_lens = tf.compat.v1.placeholder(tf.int32, [None],
                                        name="sequence_lengths")
-        self.training = tf.placeholder(tf.bool)
+        self.training = tf.compat.v1.placeholder(tf.bool)
 
-        self.learning_rate = tf.placeholder(tf.float32, shape=[])
+        self.learning_rate = tf.compat.v1.placeholder(tf.float32, shape=[])
         
         
     def build_loss(self, outputs):
@@ -139,7 +141,7 @@ class RNN_Model(object):
             self.loss_nowd = tf.reduce_mean(sample_cross_entropy)
 
         weight_decay = self.weight_decay*tf.add_n([tf.nn.l2_loss(v) for v in
-                                                   tf.trainable_variables()
+                                                   tf.compat.v1.trainable_variables()
                                                    if 'bias' not in v.name])
         tf.summary.scalar('weight_decay', weight_decay)
         self.loss = self.loss_nowd + weight_decay
@@ -147,17 +149,17 @@ class RNN_Model(object):
     def build_optimizer(self):
         if self.opt_method == 'adam':
             print('Optimizing with Adam')
-            opt = tf.train.AdamOptimizer(self.learning_rate)
+            opt = tf.compat.v1.train.AdamOptimizer(self.learning_rate)
         elif self.opt_method == 'rms':
             print('Optimizing with RMSProp')
-            opt = tf.train.RMSPropOptimizer(self.learning_rate)
+            opt = tf.compat.v1.train.RMSPropOptimizer(self.learning_rate)
         elif self.opt_method == 'momentum':
             print('Optimizing with Nesterov momentum SGD')
             opt = tf.train.MomentumOptimizer(self.learning_rate,
                                              momentum=0.9,
                                              use_nesterov=True)
 
-        params = tf.trainable_variables()
+        params = tf.compat.v1.trainable_variables()
         gradients = tf.gradients(self.loss, params)
         clipped_gradients, norm = tf.clip_by_global_norm(gradients,
                                                          self.max_gradient_norm)
@@ -193,4 +195,4 @@ class RNN_Model(object):
             print("Adding training operations")
             self.build_optimizer()
 
-        self.summary_op = tf.summary.merge_all()
+        self.summary_op = tf.compat.v1.summary.merge_all()

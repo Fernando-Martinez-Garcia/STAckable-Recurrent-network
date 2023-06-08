@@ -63,7 +63,7 @@ class TrainAgent(object):
                           )
         model.build(self.output_format)
 
-        saver = tf.train.Saver()
+        saver = tf.compat.v1.train.Saver()
 
         # Prepare validation and test data
         v_input_feed, v_output_feed = get_validset_feeds(
@@ -78,12 +78,12 @@ class TrainAgent(object):
             metric_tags += ['Test Loss', 'Test Acc', 'Test F1']
 
         with create_sess() as sess:
-            sess.run([tf.global_variables_initializer(),
-                      tf.local_variables_initializer()])
+            sess.run([tf.compat.v1.global_variables_initializer(),
+                      tf.compat.v1.local_variables_initializer()])
             best_loss = 1e8
             best_epoch = 0
 
-            tb_writer = tf.summary.FileWriter(self.logdir, sess.graph)
+            tb_writer = tf.compat.v1.summary.FileWriter(self.logdir, sess.graph)
 
             #Load pretrained params
             #saver.restore(sess, "./models/pmnist_bn_8_debug/model")
@@ -151,6 +151,9 @@ class TrainAgent(object):
                     eval_metrics[1:3] += calculate_metrics(
                         y, np.argmax(output_probs, axis=1)) / \
                         float(len(minibatch_indices))
+                    if e%10 == 0:
+                        print('Training:')
+                        print(eval_metrics[0:3])
 
                 if 'mnist' in args.data:
                     # Compute validation loss and accuracy
@@ -201,9 +204,9 @@ class TrainAgent(object):
                                      tags=['placeholder'],
                                      values=[0],
                                      )
-
-                    print()
-                    print(args.name + ": Epoch {}/{}".format(e, args.epochs))
+                    if e%10 == 0:
+                        print()
+                        print(args.name + ": Epoch {}/{}".format(e, args.epochs))
 
         if 'mnist' in args.data:
             test_agent.test(x_test, y_test, self.save_path, self.config)

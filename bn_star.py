@@ -1,11 +1,11 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.contrib.rnn import LSTMStateTuple
+from tensorflow.compat.v1.nn.rnn_cell  import LSTMStateTuple
 from tensorflow.python.ops import random_ops
 from tensorflow.python.keras import initializers
 
 
-class BNSTAR_cell(tf.contrib.rnn.BasicLSTMCell):
+class BNSTAR_cell(tf.compat.v1.nn.rnn_cell.BasicLSTMCell):
     def __init__(self, num_units, t_max=784, training=True,
                  **kwargs):
         '''

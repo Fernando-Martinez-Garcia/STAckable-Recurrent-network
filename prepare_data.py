@@ -28,10 +28,10 @@ def load_data(dataset_name, seq_len=200):
         return get_mnist(permute=True)
 
     if dataset_name == 'add':
-        x, y = get_add(n_data=150000, seq_len=seq_len)
+        x, y = get_add(n_data=100, seq_len=seq_len)
 
     if dataset_name == 'copy':
-        return get_copy(n_data=150000, seq_len=seq_len)
+        return get_copy(n_train=100,n_valid=100, n_test=100, seq_len=seq_len)
 
     train_idx, valid_idx, test_idx = randomly_split_data(
         y, test_frac=0.2, valid_frac=0.1)
@@ -60,7 +60,8 @@ def get_add(n_data, seq_len):
     return x, y
 
 
-def get_copy(n_data, seq_len):
+def get_copy(n_train,n_valid, n_test, seq_len):
+    n_data=n_train+n_valid+n_test
     x = np.zeros((n_data, seq_len+1+2*10))
     info = np.random.randint(1, high=9, size=(n_data, 10))
 
@@ -73,7 +74,7 @@ def get_copy(n_data, seq_len):
     x = one_hot_sequence(x)
     y = one_hot_sequence(y)
 
-    n_train, n_valid, n_test = [100000, 10000, 40000]
+##    n_train, n_valid, n_test = [100000, 10000, 40000]
     x_train = list(x[:n_train])
     y_train = y[:n_train]
     x_valid = list(x[n_train:n_train+n_valid])

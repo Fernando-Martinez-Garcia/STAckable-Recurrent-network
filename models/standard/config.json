@@ -1,0 +1,20 @@
+{
+    "T": 200,
+    "batch_size": 100,
+    "cell": "star",
+    "chrono": true,
+    "data": "copy",
+    "epochs": 100,
+    "keep_prob": 0.9,
+    "layers": "128",
+    "learning_rate": 0.001,
+    "log_every": 100,
+    "log_test": false,
+    "max_grad_norm": 5.0,
+    "name": "standard",
+    "optimizer": "adam",
+    "placeholder": 0,
+    "results_file": null,
+    "stack": 2,
+    "wd": 0.0
+}

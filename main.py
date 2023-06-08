@@ -29,7 +29,7 @@ def parse_args():
                         default=4,
                         help="[%(default)s] The batch size to train with")
     parser.add_argument("--batch_size", type=int,
-                        default=200,
+                        default=100,
                         help="[%(default)s] The batch size to train with")
     parser.add_argument("--keep_prob", type=float,
                         default=0.9,
@@ -98,6 +98,7 @@ def test_valid_wrapper(test_agent, args):
     test_agent.test(x_test, y_test, 'models/'+args.name+'/')
     
 def main(args):
+    print(args.data)
     if args.gpu is not None:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     else:

@@ -89,7 +89,7 @@ def calculate_metrics(y_true, y_pred, labels=None):
 
     acc = np.average(np.equal(y_true, y_pred))
 
-    F1 = metrics.f1_score(y_true, y_pred, labels, average='macro')
+    F1 = metrics.f1_score(y_true, y_pred, labels=labels, average='macro')
 
     return np.array([acc, F1])
 
